@@ -1,0 +1,16 @@
+# Basic ML Libs
+numpy
+pandas
+seaborn
+matplotlib
+scikit-learn
+
+# Modeling
+tensorflow
+
+# Dataset
+ucimlrepo
+
+# Optional
+nvidia-cuda-runtime # for cuda backend on nvidia gpus
+catppuccin-jupyterlab
