@@ -1,7 +1,6 @@
 # Basic ML Libs
 numpy
 pandas
-seaborn
 matplotlib
 scikit-learn
 

@@ -23,3 +23,13 @@ wget -O heart-disease.zip https://archive.ics.uci.edu/static/public/45/heart+dis
 | thal          | Feature | Categorical |             |        | yes            |             |
 | num           | Target  | Integer     |             |        | no             | Diagnosis of Heart Disease |
 
+# Usage
+- Run Jupyter Doceker container (Recomended)
+```shell
+docker run -d -p 3030:8888 --gpus all -v /mnt/localhost/Jupyter/:/home/jovyan --name Jupyter quay.io/jupyter/base-notebook start-notebook.py --NotebookApp.token=''
+```
+- In Jupyter Terminal install pip packages
+```shell
+pip install -r requirements.txt 
+```
+- Run Notebook analysis for experimenting
