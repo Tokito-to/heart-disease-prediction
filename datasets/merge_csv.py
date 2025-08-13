@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 FILE_LIST = [ './heart_disease_cleaned.csv', './cleaned_merged_heart_dataset.csv' ]
 
 # Mapping
@@ -79,7 +78,7 @@ for file in FILE_LIST:
         data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
     if data['thal'].dtype == 'object':
         data['thal'] = data['thal'].apply(lambda x: THAL_MAPPING[x])
-    
+
     data['target'] = data['target'].apply(lambda x: TARGET_INT_MAPPING[x])
 
     dataframes.append(data)
