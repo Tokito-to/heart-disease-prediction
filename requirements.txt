@@ -5,11 +5,8 @@ matplotlib
 scikit-learn
 
 # Modeling
-tensorflow
-
-# Dataset
-ucimlrepo
+tensorflow[and-cuda]
 
 # Optional
 nvidia-cuda-runtime # for cuda backend on nvidia gpus
-catppuccin-jupyterlab
+catppuccin-jupyterlab # Jupyter Pastel Theme
