@@ -4,9 +4,15 @@ pandas
 matplotlib
 scikit-learn
 
+# balance sample
+imblearn
+
 # Modeling
 tensorflow[and-cuda]
+silence_tensorflow
+deap
 
 # Optional
 nvidia-cuda-runtime # for cuda backend on nvidia gpus
 catppuccin-jupyterlab # Jupyter Pastel Theme
+
