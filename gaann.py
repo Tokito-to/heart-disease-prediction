@@ -38,7 +38,12 @@ sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
-# Reduce Learning
+# Dump scaler # We need this to use pre-trained model
+# pre-trained model require same scaler as training scaler
+import joblib
+joblib.dump(sc, 'models/scaler.pkl')
+
+# Reduce Learning and Early stop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=5, min_delta=0.001)
@@ -70,14 +75,14 @@ def create_ann_model(params):
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(optimizer=Adam(learning_rate=lr), loss='binary_crossentropy', metrics=['accuracy'])
-    model.fit(X_train, y_train, validation_split=0.30, epochs=120, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
+    model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
     return model
 
-# Logging configuration
-log_file = 'ga_ann_log.csv'
+# Logging
+log_file = 'model_log.csv'
 with open(log_file, mode='w', newline='') as f:
     writer = csv.writer(f)
-    writer.writerow(['Generation', 'Individual', 'n1', 'n2', 'n3', 'lr', 'dr', 'l2', 'alpha', 'Accuracy', 'TP', 'FP', 'FN', 'TN'])
+    writer.writerow(['Generation', 'n1', 'n2', 'n3', 'lr', 'dr', 'l2', 'alpha', 'Accuracy', 'TP', 'FP', 'FN', 'TN'])
 
 # Evaluation function with logging
 def evaluate(individual, generation=0):
@@ -94,7 +99,6 @@ def evaluate(individual, generation=0):
         writer = csv.writer(f)
         writer.writerow([
             generation,
-            str(individual),
             int(individual[0]), int(individual[1]), int(individual[2]),
             round(individual[3], 6), round(individual[4], 4), round(individual[5], 6),
             round(individual[6], 4),
@@ -119,7 +123,7 @@ param_ranges = {
 def random_param():
     def safe_uniform(low, high):
         return max(0.00001, random.uniform(max(0, low), max(0, high)))
-    
+
     return [
         random.randint(*param_ranges["n1"]),     # n1: neurons layer 1
         random.randint(*param_ranges["n2"]),     # n2: neurons layer 2
@@ -162,14 +166,14 @@ print("Starting Genetic Algorithm Optimization...\n")
 
 for gen in range(N_GENS):
     print(f"=== Generation {gen+1} ===")
-    
+
     offspring = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.2)
     offspring = list(map(repair, offspring))
-    
+
     # Evaluate with logging
     for ind in offspring:
         ind.fitness.values = evaluate(ind, generation=gen+1)
-    
+
     population = toolbox.select(offspring, k=len(population))
     best_ind = tools.selBest(population, k=1)[0]
     best_accuracies.append(best_ind.fitness.values[0])
@@ -182,9 +186,7 @@ print("Training model with best parameters...")
 best_params = tools.selBest(population, k=1)[0]
 final_model = create_ann_model(best_params)
 
-final_model.save('heart_model.keras')
-
-print("Final model saved as 'heart_model.keras'")
+final_model.save('models/heart_model.keras')
 
 # Final evaluation
 y_final_pred = final_model.predict(X_test)
@@ -192,3 +194,4 @@ y_final_pred = (y_final_pred > 0.5).astype(int)
 final_acc = accuracy_score(y_test, y_final_pred)
 
 print("Final Test Accuracy: {:.2f}%".format(final_acc * 100))
+
