@@ -13,7 +13,7 @@ def custom_static(filename):
 # Load model and scaler
 import joblib
 from keras.models import load_model
-model = load_model("models/heart_model.keras")
+model = load_model("models/ReLU_heart_model.keras")
 sc = joblib.load("models/scaler.pkl")
 
 @app.route('/')

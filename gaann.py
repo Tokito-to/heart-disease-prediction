@@ -11,9 +11,11 @@ import tensorflow as tf
 
 from keras.backend import clear_session
 from keras.models import Sequential
-from keras.layers import PReLU, Dense, Dropout, BatchNormalization, InputLayer
+from keras.layers import ReLU, LeakyReLU, PReLU, ELU, Activation
+from keras.layers import Dense, Dropout, BatchNormalization, InputLayer
 from keras.optimizers import Adam
 from keras.regularizers import l2
+from keras.metrics import AUC
 
 from deap import base, creator, tools, algorithms
 
@@ -58,28 +60,28 @@ def create_ann_model(params):
     model.add(InputLayer(shape=(X_train.shape[1],)))
 
     model.add(Dense(int(n1), kernel_regularizer=l2(l2_reg)))
-    model.add(PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha)))
+    model.add(ReLU())
     model.add(BatchNormalization())
     model.add(Dropout(dr))
 
     model.add(Dense(int(n2), kernel_regularizer=l2(l2_reg)))
-    model.add(PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha)))
+    model.add(ReLU())
     model.add(BatchNormalization())
     model.add(Dropout(dr))
 
     model.add(Dense(int(n3), kernel_regularizer=l2(l2_reg)))
-    model.add(PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha)))
+    model.add(ReLU())
     model.add(BatchNormalization())
     model.add(Dropout(dr))
 
     model.add(Dense(1, activation='sigmoid'))
 
-    model.compile(optimizer=Adam(learning_rate=lr), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=lr), loss='binary_crossentropy', metrics=['accuracy', AUC(name='auc')])
     model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
     return model
 
 # Logging
-log_file = 'model_log.csv'
+log_file = 'models/logs/ReLU_model.csv'
 with open(log_file, mode='w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['Generation', 'n1', 'n2', 'n3', 'lr', 'dr', 'l2', 'alpha', 'Accuracy', 'TP', 'FP', 'FN', 'TN'])
@@ -186,7 +188,7 @@ print("Training model with best parameters...")
 best_params = tools.selBest(population, k=1)[0]
 final_model = create_ann_model(best_params)
 
-final_model.save('models/heart_model.keras')
+final_model.save('models/ReLU_heart_model.keras')
 
 # Final evaluation
 y_final_pred = final_model.predict(X_test)
