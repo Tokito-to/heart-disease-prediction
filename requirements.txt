@@ -12,6 +12,9 @@ tensorflow[and-cuda]
 silence_tensorflow
 deap
 
+# webapp
+flask
+
 # Optional
 nvidia-cuda-runtime # for cuda backend on nvidia gpus
 catppuccin-jupyterlab # Jupyter Pastel Theme

@@ -120,7 +120,6 @@ param_ranges = {
     "alpha": (0.01, 0.3)
 }
 
-
 # Generate random individual
 def random_param():
     def safe_uniform(low, high):
@@ -196,4 +195,3 @@ y_final_pred = (y_final_pred > 0.5).astype(int)
 final_acc = accuracy_score(y_test, y_final_pred)
 
 print("Final Test Accuracy: {:.2f}%".format(final_acc * 100))
-

@@ -4,7 +4,7 @@ silence_tensorflow()
 import numpy as np
 from flask import Flask, request, jsonify, render_template, send_from_directory
 
-app = Flask(__name__, template_folder='webapp_src', static_folder='webapp_src', static_url_path='')
+app = Flask(__name__, template_folder='src', static_folder='src', static_url_path='')
 
 @app.route('/templates/<path:filename>')
 def custom_static(filename):
