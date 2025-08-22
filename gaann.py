@@ -188,7 +188,13 @@ print("Training model with best parameters...")
 best_params = tools.selBest(population, k=1)[0]
 model = create_ann_model(best_params, fit_model=False)
 model_history =  model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
-joblib.dump(model_history.history, 'models/logs/ReLU_model_logs.pkl')
+
+log_data = {
+    'history': model_history.history,
+    'best_params': best_params
+}
+
+joblib.dump(log_data, 'models/logs/ReLU_model_logs.pkl')
 
 final_model.save('models/ReLU_heart_model.keras')
 
