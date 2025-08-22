@@ -52,7 +52,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=5, min_delta=0.001)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.0001, verbose=0)
 
 # ANN
-def create_ann_model(params):
+def create_ann_model(params, fit_model=True):
     clear_session()
     n1, n2, n3, lr, dr, l2_reg, alpha = params
 
@@ -77,7 +77,8 @@ def create_ann_model(params):
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(optimizer=Adam(learning_rate=lr), loss='binary_crossentropy', metrics=['accuracy', AUC(name='auc')])
-    model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
+    if fit_model:
+        model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
     return model
 
 # Logging
@@ -88,7 +89,7 @@ with open(log_file, mode='w', newline='') as f:
 
 # Evaluation function with logging
 def evaluate(individual, generation=0):
-    model = create_ann_model(individual)
+    model = create_ann_model(individual, fit_model=True)
 
     y_pred = model.predict(X_test)
     y_pred_bin = (y_pred > 0.45).astype(int)
@@ -185,7 +186,9 @@ for gen in range(N_GENS):
 # Final model training
 print("Training model with best parameters...")
 best_params = tools.selBest(population, k=1)[0]
-final_model = create_ann_model(best_params)
+model = create_ann_model(best_params, fit_model=False)
+model_history =  model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
+joblib.dump(model_history.history, 'models/logs/ReLU_model_logs.pkl')
 
 final_model.save('models/ReLU_heart_model.keras')
 

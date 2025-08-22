@@ -27,6 +27,7 @@ trap 'cleanup kill' INT QUIT
 for act in "${!activations[@]}"; do
     logfile="'models/logs/${act}_model.csv'"
     modelfile="'models/${act}_heart_model.keras'"
+    historyfile="'models/${act}_model_logs.pkl'"
 
     # Restore Stock Script
     cp $BACKUP_SCRIPT $PYTHON_SCRIPT
@@ -36,10 +37,12 @@ for act in "${!activations[@]}"; do
     sed -i "s|model.add(ReLU())|${activations[$act]}|g" $PYTHON_SCRIPT
     sed -i "s|log_file = 'models/logs/ReLU_model.csv'|log_file = ${logfile}|g" $PYTHON_SCRIPT
     sed -i "s|final_model.save('models/ReLU_heart_model.keras')|final_model.save(${modelfile})|g" $PYTHON_SCRIPT
+    sed -i "s|joblib.dump(model_history.history, 'models/logs/ReLU_model_logs.pkl')|joblib.dump(model_history.history, ${historyfile})|g" $PYTHON_SCRIPT
 
     echo "Modified script for activation: $act"
     echo "Log file -> ${logfile}"
     echo "Model save path -> ${modelfile}"
+    echo "Model history path -> ${historyfile}"
     echo "------------------------------"
 
     python $PYTHON_SCRIPT
