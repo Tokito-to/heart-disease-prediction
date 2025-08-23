@@ -112,12 +112,12 @@ def evaluate(individual, generation=0):
 
 # Hyperparameter ranges
 param_ranges = {
-    "n1": (100, 200),
-    "n2": (50, 150),
-    "n3": (30, 100),
+    "n1": (64, 128),
+    "n2": (32, 64),
+    "n3": (16, 32),
     "lr": (0.0001, 0.01),
-    "dr": (0.01, 0.3),
-    "l2": (0.0001, 0.01),
+    "dr": (0.0, 0.4),
+    "l2": (0.000001, 0.01),
     "alpha": (0.01, 0.3)
 }
 
@@ -189,6 +189,8 @@ best_params = tools.selBest(population, k=1)[0]
 model = create_ann_model(best_params, fit_model=False)
 model_history =  model.fit(X_train, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
 
+model.save('models/ReLU_heart_model.keras')
+
 log_data = {
     'history': model_history.history,
     'best_params': best_params
@@ -196,11 +198,10 @@ log_data = {
 
 joblib.dump(log_data, 'models/logs/ReLU_model_logs.pkl')
 
-final_model.save('models/ReLU_heart_model.keras')
-
 # Final evaluation
-y_final_pred = final_model.predict(X_test)
-y_final_pred = (y_final_pred > 0.5).astype(int)
-final_acc = accuracy_score(y_test, y_final_pred)
+y_prob = model.predict(X_test)
+y_pred = (y_prob > 0.5).astype(int)
+accuracy = accuracy_score(y_test, y_pred)
 
-print("Final Test Accuracy: {:.2f}%".format(final_acc * 100))
+print("Final Test Accuracy: {:.2f}%".format(accuracy * 100))
+

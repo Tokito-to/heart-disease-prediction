@@ -38,3 +38,4 @@ elif y_pred[0] == 0:
     print(f"{GREEN}Prediction: Low Likelihood of Heart Disease.{RESET}")
 else:
     print(f"{YELLOW}Prediction Could Not Be Determined.{RESET}")
+
