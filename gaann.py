@@ -112,9 +112,9 @@ def evaluate(individual, generation=0):
 
 # Hyperparameter ranges
 param_ranges = {
-    "n1": (64, 128),
-    "n2": (32, 64),
-    "n3": (16, 32),
+    "n1": (128, 192),
+    "n2": (64, 128),
+    "n3": (32, 64),
     "lr": (0.0001, 0.01),
     "dr": (0.0, 0.4),
     "l2": (0.000001, 0.01),
