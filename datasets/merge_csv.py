@@ -102,6 +102,10 @@ for column, values in FILTERS.items():
     rows_dropped = prev_rows - data.shape[0]
     print(f"Rows dropped by filter '{column}': {rows_dropped}")
 
+chol_zero = (data['chol'] == 0).sum()
+print(f'Rows dropped by filter chol = 0: {chol_zero}')
+data = data[data['chol'] != 0]
+
 print(f"Total rows dropped: {initial_rows - data.shape[0]}")
 
 postcleanup = len(data)
