@@ -14,7 +14,8 @@ jobs:
           BOT_TOKEN: ${{ secrets.TG_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          COMMIT_MESSAGE="New Commit Pushed: \n${GITHUB_EVENT_COMMIT_MESSAGE}"
+          COMMIT_MESSAGE="New Commit Pushed:
+          ${{ github.event.head_commit.message }}"
           echo "${COMMIT_MESSAGE}"
           curl -X POST \
           https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
