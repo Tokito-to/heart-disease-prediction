@@ -25,7 +25,7 @@ THAL_MAPPING = {
     'fixed defect': 2,
     'reversable defect': 3
 }
-THAL_INT_MAPPING = { 3: 1, 6: 2, 7: 3 }
+THAL_INT_MAPPING = { 0:0, 1:1, 2:2, 3:3, 3: 1, 6: 2, 7: 3 }
 CP_INT_MAPPING = { 0: 0, 1: 0, 2: 1, 3: 2, 4: 3 }
 SLOPE_INT_MAPPING = { 0: 0, 1: 0, 2: 1, 3: 2 }
 TARGET_INT_MAPPING = { 0: 0, 1: 1, 2: 1, 3: 1, 4: 1 }
@@ -75,6 +75,8 @@ for file in FILE_LIST:
     if data['ca'].dtype == 'float64':
         data['ca'] = data['ca'].astype(int)
     if data['thal'].dtype == 'float64':
+        data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
+    if data['thal'].dtype == 'int64':
         data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
     if data['thal'].dtype == 'object':
         data['thal'] = data['thal'].apply(lambda x: THAL_MAPPING[x])
