@@ -1,8 +1,6 @@
 name: Telegram Notify
 on:
   push:
-    branches:
-      - main
 
 jobs:
   notify:
