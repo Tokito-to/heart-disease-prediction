@@ -3,6 +3,7 @@
 ## DataSet Source
 - https://www.kaggle.com/datasets/abdmental01/heart-disease-dataset
 - https://www.kaggle.com/datasets/mfarhaannazirkhan/heart-dataset
+- https://data.mendeley.com/datasets/dzz48mvjht/1 (Thalassemia (thal) not available - 13 features)
 - Run fetch_dataset.sh to fetch and update the datasets
 
 ### Dataset Explained
@@ -34,4 +35,3 @@ docker run -d -p 3030:8888 --gpus all -v /mnt/localhost/Jupyter/:/home/jovyan --
 pip install -r requirements.txt
 ```
 - Run Notebook analysis for experimenting
-

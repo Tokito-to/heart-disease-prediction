@@ -1,6 +1,6 @@
 import pandas as pd
 
-FILE_LIST = [ './heart_disease_cleaned.csv', './cleaned_merged_heart_dataset.csv' ]
+FILE_LIST = [ './heart_disease_cleaned.csv', './cleaned_merged_heart_dataset.csv', './Cardiovascular_Disease_Dataset.csv' ]
 
 # Mapping
 SEX_MAPPING = {'Male': 1, 'Female': 0}
@@ -52,6 +52,19 @@ for file in FILE_LIST:
         data.drop('id', axis=1, inplace=True)
     if 'dataset' in data.columns:
         data.drop('dataset', axis=1, inplace=True)
+    if 'patientid' in data.columns:
+        data.rename(columns={'gender': 'sex'}, inplace=True)
+        data.rename(columns={'chestpain': 'cp'}, inplace=True)
+        data.rename(columns={'restingBP': 'trestbps'}, inplace=True)
+        data.rename(columns={'serumcholestrol': 'chol'}, inplace=True)
+        data.rename(columns={'fastingbloodsugar': 'fbs'}, inplace=True)
+        data.rename(columns={'restingrelectro': 'restecg'}, inplace=True)
+        data.rename(columns={'maxheartrate': 'thalach'}, inplace=True)
+        data.rename(columns={'exerciseangia': 'exang'}, inplace=True)
+        data.rename(columns={'noofmajorvessels': 'ca'}, inplace=True)
+        data.drop('patientid', axis=1, inplace=True)
+    if 'thal' in data.columns:
+        data.drop('thal', axis=1, inplace=True)
     data.rename(columns={'num': 'target'}, inplace=True)
     data.rename(columns={'thalch': 'thalach'}, inplace=True)
     data.rename(columns={'thalachh': 'thalach'}, inplace=True)
@@ -74,12 +87,12 @@ for file in FILE_LIST:
         data['slope'] = data['slope'].apply(lambda x: SLOPE_MAPPING[x])
     if data['ca'].dtype == 'float64':
         data['ca'] = data['ca'].astype(int)
-    if data['thal'].dtype == 'float64':
-        data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
-    if data['thal'].dtype == 'int64':
-        data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
-    if data['thal'].dtype == 'object':
-        data['thal'] = data['thal'].apply(lambda x: THAL_MAPPING[x])
+    #if data['thal'].dtype == 'float64':
+    #    data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
+    #if data['thal'].dtype == 'int64':
+    #    data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
+    #if data['thal'].dtype == 'object':
+    #    data['thal'] = data['thal'].apply(lambda x: THAL_MAPPING[x])
 
     data['target'] = data['target'].apply(lambda x: TARGET_INT_MAPPING[x])
 
@@ -121,4 +134,3 @@ print(f'Final Dataset Size: {len(data)}')
 
 # Write cleaned dataset
 data.to_csv('../heart_dataset.csv', index=False)
-
