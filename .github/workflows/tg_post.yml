@@ -1,0 +1,26 @@
+name: Telegram Notify
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Notify Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: |
+          COMMIT_MESSAGE="New Commit Pushed: \n${GITHUB_EVENT_COMMIT_MESSAGE}"
+          echo "${COMMIT_MESSAGE}"
+          curl -X POST \
+          https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+          -d chat_id="${CHAT_ID}" \
+          -d text="${COMMIT_MESSAGE}" \
+          -d "disable_web_page_preview=true"
+
