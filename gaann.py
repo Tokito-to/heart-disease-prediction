@@ -23,7 +23,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 
 # Load dataset
 data = pd.read_csv('heart_dataset.csv')
-X = data.iloc[:, :13].values
+X = data.iloc[:, :12].values
 y = data["target"].values
 
 # Undersample dataset
@@ -160,8 +160,8 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("evaluate", evaluate)
 
 # Run GA
-population = toolbox.population(n=50)  # population size
-N_GENS = 10                            # number of generations
+population = toolbox.population(n=64)  # population size
+N_GENS = 8                             # number of generations
 best_accuracies = []
 
 print("Starting Genetic Algorithm Optimization...\n")
@@ -183,6 +183,7 @@ for gen in range(N_GENS):
     print("Best individual so far:", best_ind)
     print("Best accuracy: {:.2f}%\n".format(best_ind.fitness.values[0] * 100))
 
+
 # Final model training
 print("Training model with best parameters...")
 best_params = tools.selBest(population, k=1)[0]
@@ -195,7 +196,6 @@ log_data = {
     'history': model_history.history,
     'best_params': best_params
 }
-
 joblib.dump(log_data, 'models/logs/ReLU_model_logs.pkl')
 
 # Final evaluation
