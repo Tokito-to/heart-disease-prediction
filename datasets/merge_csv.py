@@ -20,12 +20,6 @@ SLOPE_MAPPING = {
     'flat': 1,
     'downsloping': 2
 }
-THAL_MAPPING = {
-    'normal': 1,
-    'fixed defect': 2,
-    'reversable defect': 3
-}
-THAL_INT_MAPPING = { 0:0, 1:1, 2:2, 3:3, 3: 1, 6: 2, 7: 3 }
 CP_INT_MAPPING = { 0: 0, 1: 0, 2: 1, 3: 2, 4: 3 }
 SLOPE_INT_MAPPING = { 0: 0, 1: 0, 2: 1, 3: 2 }
 TARGET_INT_MAPPING = { 0: 0, 1: 1, 2: 1, 3: 1, 4: 1 }
@@ -81,19 +75,15 @@ for file in FILE_LIST:
     if data['restecg'].dtype == 'object':
         data['restecg'] = data['restecg'].apply(lambda x: RESTECG_MAPPING[x])
     data['thalach'] = data['thalach'].astype(int)
+    data['oldpeak'] = data['oldpeak'].apply(
+        lambda x: round(x, 1) if pd.notna(x) and not (x * 10).is_integer() else x
+    )
     if data['slope'].dtype == 'int64':
         data['slope'] = data['slope'].apply(lambda x: SLOPE_INT_MAPPING[x])
     if data['slope'].dtype == 'object':
         data['slope'] = data['slope'].apply(lambda x: SLOPE_MAPPING[x])
     if data['ca'].dtype == 'float64':
         data['ca'] = data['ca'].astype(int)
-    #if data['thal'].dtype == 'float64':
-    #    data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
-    #if data['thal'].dtype == 'int64':
-    #    data['thal'] = data['thal'].apply(lambda x: THAL_INT_MAPPING[x])
-    #if data['thal'].dtype == 'object':
-    #    data['thal'] = data['thal'].apply(lambda x: THAL_MAPPING[x])
-
     data['target'] = data['target'].apply(lambda x: TARGET_INT_MAPPING[x])
 
     dataframes.append(data)
