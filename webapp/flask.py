@@ -26,19 +26,18 @@ def predict():
 
     try:
         features = [
-            float(data['age']),
-            float(data['sex']),
-            float(data['cp']),
-            float(data['trestbps']),
-            float(data['chol']),
-            float(data['fbs']),
-            float(data['restecg']),
-            float(data['thalach']),
-            float(data['exang']),
+            int(data['age']),
+            int(data['sex']),
+            int(data['cp']),
+            int(data['trestbps']),
+            int(data['chol']),
+            int(data['fbs']),
+            int(data['restecg']),
+            int(data['thalach']),
+            int(data['exang']),
             float(data['oldpeak']),
-            float(data['slope']),
-            float(data['ca']),
-            float(data['thal'])
+            int(data['slope']),
+            int(data['ca']),
         ]
 
         input_data = np.array([features])

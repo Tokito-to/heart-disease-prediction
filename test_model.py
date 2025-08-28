@@ -17,7 +17,7 @@ model = load_model(args.model)
 sc = joblib.load(args.scaler)
 
 # input data
-input_data = np.array([[62,0,3,140,268,0,2,160,0,3.6,2,2,1]])
+input_data = np.array([[65,0,2,160,360,0,2,151,0,0.8,0,0]])
 
 # Scale the input data
 input_data_scaled = sc.transform(input_data)
