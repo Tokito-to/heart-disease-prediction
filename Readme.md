@@ -35,3 +35,4 @@ docker run -d -p 3030:8888 --gpus all -v /mnt/localhost/Jupyter/:/home/jovyan --
 pip install -r requirements.txt
 ```
 - Run Notebook analysis for experimenting
+

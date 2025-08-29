@@ -11,6 +11,7 @@ imblearn
 tensorflow[and-cuda]
 silence_tensorflow
 deap
+shap
 
 # webapp
 flask
