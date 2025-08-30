@@ -49,8 +49,8 @@ joblib.dump(sc, 'models/scaler.pkl')
 # Reduce Learning and Early stop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, min_delta=0.001)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.0001, verbose=0)
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, min_delta=0.001, start_from_epoch=25)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=2, min_lr=0.0001)
 
 # Compute feature importance (RF + MI)
 import shap
