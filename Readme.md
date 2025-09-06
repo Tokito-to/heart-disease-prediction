@@ -3,7 +3,7 @@
 ## DataSet Source
 - https://www.kaggle.com/datasets/abdmental01/heart-disease-dataset
 - https://www.kaggle.com/datasets/mfarhaannazirkhan/heart-dataset
-- https://data.mendeley.com/datasets/dzz48mvjht/1 (Thalassemia (thal) not available - 13 features)
+- https://data.mendeley.com/datasets/dzz48mvjht/1
 - Run fetch_dataset.sh to fetch and update the datasets
 
 ### Dataset Explained
