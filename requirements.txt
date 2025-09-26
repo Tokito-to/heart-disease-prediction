@@ -15,6 +15,7 @@ shap
 
 # webapp
 flask
+waitress
 
 # Optional
 nvidia-cuda-runtime # for cuda backend on nvidia gpus

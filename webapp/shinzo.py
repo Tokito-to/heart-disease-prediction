@@ -2,6 +2,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from waitress import serve
 from flask import Flask, request, jsonify, render_template, send_from_directory
 
 # Silence TensorFlow warnings
@@ -78,6 +79,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    # Port 0.0.0.0 is to run directly on jupyter (not recommended)
-    # update to localhost i.e 127.0.0.1 for production
+    serve(app, host="0.0.0.0", port=5000)
