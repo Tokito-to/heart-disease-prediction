@@ -1,67 +1,85 @@
-from silence_tensorflow import silence_tensorflow
-silence_tensorflow()
-
 import csv
 import random
+import joblib
 
 import numpy as np
 import pandas as pd
 
-import tensorflow as tf
+from imblearn.over_sampling import SMOTE
+from sklearn.model_selection import train_test_split
 
-from keras.backend import clear_session
-from keras.models import Sequential
-from keras.layers import ReLU, LeakyReLU, PReLU, ELU, Activation
-from keras.layers import Dense, Dropout, BatchNormalization, InputLayer
-from keras.optimizers import Adam
-from keras.regularizers import l2
-from keras.metrics import AUC
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
 
-from deap import base, creator, tools, algorithms
+import shap
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.preprocessing import minmax_scale
 
-from sklearn.metrics import accuracy_score, confusion_matrix
+from silence_tensorflow import silence_tensorflow
+silence_tensorflow()
+
+import tensorflow as tf  # noqa: F401,E402
+
+from keras.backend import clear_session  # noqa: E402
+from keras.models import Sequential  # noqa: E402
+from keras.layers import ReLU, LeakyReLU, PReLU, ELU, Activation  # noqa: F401,E402,E501
+from keras.layers import Dense, InputLayer  # noqa: E402
+from keras.layers import Dropout, BatchNormalization  # noqa: E402
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau  # noqa: E402
+from keras.optimizers import Adam  # noqa: E402
+from keras.regularizers import l2  # noqa: E402
+from keras.metrics import AUC  # noqa: E402
+
+from deap import base, creator, tools, algorithms  # noqa: E402
+
+# Hyperparameter Ranges
+hyprparameter_ranges = {
+    "l1": (128, 192),
+    "l2": (64, 128),
+    "l3": (32, 64),
+    "learning_rate": (0.0001, 0.01),
+    "dropout_rate": (0.0, 0.4),
+    "l2_regularization": (0.000001, 0.01),
+    "alpha": (0.01, 0.3)
+}
+
+# GA Parameters
+ga_parameters = {
+    "generation": 2,
+    "population": 5
+}
 
 # Load dataset
 data = pd.read_csv('heart_dataset.csv')
-feature_names = list(data.columns[:12])
-X = data.iloc[:, :12].values
+feature_names = data.columns[data.columns != "target"].tolist()
+input_shape = len(feature_names)
+
+X = data.iloc[:, :input_shape].values
 y = data["target"].values
 
 # Oversample using SMOTE
-from imblearn.over_sampling import SMOTE
 X, y = SMOTE(random_state=42).fit_resample(X, y)
 
 # Train-test split
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.30, random_state=42
+)
 
 # Scaling
-from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
 # Dump scaler # We need this to use pre-trained model
 # pre-trained model require same scaler as training scaler
-import joblib
 joblib.dump(sc, 'models/scaler.pkl')
 
-# Reduce Learning and Early stop
-from keras.callbacks import EarlyStopping, ReduceLROnPlateau
-
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, min_delta=0.001, start_from_epoch=25)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=2, min_lr=0.0001)
-
-# Compute feature importance (RF + MI)
-import shap
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import mutual_info_classif
-from sklearn.preprocessing import minmax_scale
-
+# Compute feature importance (RF + MI + Shap)
 rf = RandomForestClassifier(random_state=42)
 rf.fit(X_train, y_train)
 
-explainer = shap.Explainer(rf, X_train, feature_names=[f"F{i}" for i in range(X_train.shape[1])])
+explainer = shap.Explainer(rf)
 shap_values = explainer(X_train, check_additivity=False)
 shap_values_class1 = shap_values.values[:, :, 1]
 
@@ -76,134 +94,188 @@ combined_score = (
 ) / 3
 ranked_features = np.argsort(combined_score)[::-1]
 
-# Model builder
-def create_ann_model(params, fit_model=True, input_shape=None):
-    clear_session()
-    n1, n2, n3, lr, dr, l2_reg, alpha = params
-
-    model = Sequential()
-    model.add(InputLayer(shape=(input_shape,)))
-
-    model.add(Dense(int(n1), kernel_regularizer=l2(l2_reg)))
-    model.add(ReLU())
-    model.add(BatchNormalization())
-    model.add(Dropout(dr))
-
-    model.add(Dense(int(n2), kernel_regularizer=l2(l2_reg)))
-    model.add(ReLU())
-    model.add(BatchNormalization())
-    model.add(Dropout(dr))
-
-    model.add(Dense(int(n3), kernel_regularizer=l2(l2_reg)))
-    model.add(ReLU())
-    model.add(BatchNormalization())
-    model.add(Dropout(dr))
-
-    model.add(Dense(1, activation='sigmoid'))
-
-    model.compile(optimizer=Adam(learning_rate=lr), loss='binary_crossentropy', metrics=['accuracy', AUC(name='auc')])
-
-    if fit_model:
-        model.fit(X_train_selected, y_train, validation_split=0.30, epochs=145, batch_size=35, callbacks=[early_stopping, reduce_lr], verbose=0)
-
-    return model
-
 # Logging
 log_file = 'models/logs/ReLU_model.csv'
 with open(log_file, mode='w', newline='') as f:
     writer = csv.writer(f)
-    writer.writerow(['Generation', 'SelectedFeatures', 'n1', 'n2', 'n3', 'lr', 'dr', 'l2', 'alpha', 'Accuracy', 'TP', 'FP', 'FN', 'TN'])
+    header = ['Generation', 'SelectedFeatures']
+    for key in hyprparameter_ranges:
+        header.append(key)
+    header.append('Accuracy')
+    writer.writerow(header)
+
+# Early stopping
+early_stopping = EarlyStopping(
+    start_from_epoch=25,
+    monitor='val_loss',
+    min_delta=0.001,
+    patience=5
+)
+
+# Reduce Learning
+reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    min_lr=0.0001,
+    factor=0.8,
+    patience=2
+)
+
+# ANN Model
+def create_ann_model(hyprparameters, input_shape):
+    layer_keys = []
+
+    for key in hyprparameter_ranges:
+        if key.startswith('l') and key[1:].isdigit():
+            layer_keys.append(key)
+
+    hidden_layers = len(layer_keys)
+
+    clear_session()
+    layer_units = hyprparameters[:hidden_layers]
+    lr, dr, l2_reg, alpha = hyprparameters[hidden_layers:]
+
+    model = Sequential()
+    model.add(InputLayer(shape=(input_shape,)))
+
+    # Hidden Layers
+    for neurons in layer_units:
+        model.add(Dense(int(neurons), kernel_regularizer=l2(l2_reg)))
+        model.add(ReLU())
+        model.add(BatchNormalization())
+        model.add(Dropout(dr))
+
+    model.add(Dense(1, activation='sigmoid'))
+
+    model.compile(
+        optimizer=Adam(learning_rate=lr),
+        loss='binary_crossentropy',
+        metrics=['accuracy', AUC(name='auc')]
+    )
+
+    model_history = model.fit(
+        X_train_selected, y_train,
+        validation_split=0.30,
+        epochs=145, batch_size=35,
+        callbacks=[early_stopping, reduce_lr],
+        verbose=0
+    )
+
+    return model, model_history
+
+
+# Hyprparameter Generator
+def random_hyprparameters(hyprparameter_ranges):
+
+    hyprparameter = []
+
+    for key, (low, high) in hyprparameter_ranges.items():
+
+        if isinstance(low, int) and isinstance(high, int):
+            random_value = random.randint(low, high)
+        elif isinstance(low, float) and isinstance(high, float):
+            random_value = random.uniform(low, high)
+
+        hyprparameter.append(random_value)
+
+    return hyprparameter
+
+
+# Feature Selection using top-K ranked features + Random Hyprparamaters
+def smart_individual(ranked_features, hyprparameter_ranges, input_shape):
+    k = random.randint(6, 10)
+    feature_mask = [0] * 12
+
+    for idx in ranked_features[:k]:
+        feature_mask[idx] = 1
+
+    hyprparameter = random_hyprparameters(hyprparameter_ranges)
+
+    return feature_mask + hyprparameter
+
 
 # Evaluation
-def evaluate(individual, generation=0):
-    feature_mask = individual[:12]
-    selected_features = [feature_names[i] for i, bit in enumerate(feature_mask) if bit == 1]
-    hyperparams = individual[12:]
+def evaluate(individual, input_shape, generation):
+    feature_mask = individual[:input_shape]
+    hyprparameters = individual[input_shape:]
+    selected_indices = []
+    selected_features = []
 
-    selected_indices = [i for i, bit in enumerate(feature_mask) if bit == 1]
-    if not selected_indices:
-        return (0.0,)
+    for i, bit in enumerate(feature_mask):
+        if bit == 1:
+            selected_indices.append(i)
+
+    for i, bit in enumerate(feature_mask):
+        if bit == 1:
+            selected_features.append(feature_names[i])
+
+    selected_input_shape = len(selected_indices)
 
     global X_train_selected, X_test_selected
     X_train_selected = X_train[:, selected_indices]
     X_test_selected = X_test[:, selected_indices]
 
-    model = create_ann_model(hyperparams, fit_model=True, input_shape=len(selected_indices))
-    y_pred = model.predict(X_test_selected)
-    y_pred_bin = (y_pred > 0.5).astype(int)
+    model, _ = create_ann_model(hyprparameters, selected_input_shape)
+    y_probability = model.predict(X_test_selected)
+    y_prediction = (y_probability > 0.5)
 
-    acc = accuracy_score(y_test, y_pred_bin)
-    tn, fp, fn, tp = confusion_matrix(y_test, y_pred_bin).ravel()
+    accuracy = accuracy_score(y_test, y_prediction)
 
     with open(log_file, mode='a', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow([ generation, ','.join(selected_features), int(hyperparams[0]),
-                  int(hyperparams[1]), int(hyperparams[2]), round(hyperparams[3], 6),
-                  round(hyperparams[4], 4), round(hyperparams[5], 6),
-                  round(hyperparams[6], 4), round(acc, 4), tp, fp, fn, tn ])
+        log = [generation, ','.join(selected_features)]
+        for parameter in hyprparameters:
+            log.append(parameter)
+        log.append(f"{accuracy * 100:.4f} %")
+        writer.writerow(log)
 
+    return (accuracy,)
 
-    return (acc,)
-
-# Hyperparameter ranges
-param_ranges = {
-    "n1": (128, 192),
-    "n2": (64, 128),
-    "n3": (32, 64),
-    "lr": (0.0001, 0.01),
-    "dr": (0.0, 0.4),
-    "l2": (0.000001, 0.01),
-    "alpha": (0.01, 0.3)
-}
-
-# Hyperparam generator
-def safe_uniform(low, high):
-    return max(0.00001, random.uniform(max(0, low), max(0, high)))
-
-def random_param():
-    return [
-        random.randint(*param_ranges["n1"]),     # n1: neurons layer 1
-        random.randint(*param_ranges["n2"]),     # n2: neurons layer 2
-        random.randint(*param_ranges["n3"]),     # n3: neurons layer 3
-        safe_uniform(*param_ranges["lr"]),       # lr: learning rate
-        safe_uniform(*param_ranges["dr"]),       # dr: dropout rate
-        safe_uniform(*param_ranges["l2"]),       # l2: L2 regularization
-        safe_uniform(*param_ranges["alpha"])     # alpha: PReLU alpha
-    ]
-
-# Feature selection mask using top-K ranked features
-def smart_initial_feature_mask(k=8):
-    mask = [0] * 12
-    for idx in ranked_features[:k]:
-        mask[idx] = 1
-    return mask
-
-def smart_individual():
-    feature_mask = smart_initial_feature_mask(k=random.randint(6, 10))  # add some randomness
-    hyperparams = random_param()
-    return feature_mask + hyperparams
 
 # Repair function
-def repair(individual):
-    for i in range(12):
-        individual[i] = int(individual[i]) if individual[i] in [0, 1] else 1
-    if sum(individual[:12]) == 0:
-        individual[random.randint(0, 11)] = 1
-    individual[12] = int(np.clip(individual[12], *param_ranges["n1"]))
-    individual[13] = int(np.clip(individual[13], *param_ranges["n2"]))
-    individual[14] = int(np.clip(individual[14], *param_ranges["n3"]))
-    individual[15] = float(np.clip(individual[15], *param_ranges["lr"]))
-    individual[16] = float(np.clip(individual[16], *param_ranges["dr"]))
-    individual[17] = float(np.clip(individual[17], *param_ranges["l2"]))
-    individual[18] = float(np.clip(individual[18], *param_ranges["alpha"]))
+def repair(individual, ranked_features, input_shape):
+    hypr_shape = input_shape + len(hyprparameter_ranges)
+
+    feature_mask = individual[:input_shape]
+    hyprparameter = individual[input_shape:hypr_shape]
+
+    # Feature Selection
+    for i in range(input_shape):
+        if feature_mask[i] in (0, 1):
+            feature_mask[i] = int(individual[i])
+        else:
+            feature_mask[i] = 1
+
+    if sum(feature_mask[:input_shape]) == 0:
+        k = random.randint(6, 10)
+        for idx in ranked_features[:k]:
+            feature_mask[idx] = 1
+
+    # Hyprparameters
+    for i, (key, (low, high)) in enumerate(hyprparameter_ranges.items()):
+        clipped = np.clip(hyprparameter[i], low, high)
+
+        if isinstance(low, int) and isinstance(high, int):
+            hyprparameter[i] = int(clipped)
+        elif isinstance(low, float) and isinstance(high, float):
+            hyprparameter[i] = float(clipped)
+
+    individual[:input_shape] = feature_mask
+    individual[input_shape:hypr_shape] = hyprparameter
+
     return individual
 
+
 # GA setup
+toolbox = base.Toolbox()
+
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
-toolbox = base.Toolbox()
-toolbox.register("individual", tools.initIterate, creator.Individual, smart_individual)
+toolbox.register(
+    "individual", tools.initIterate, creator.Individual,
+    lambda: smart_individual(
+        ranked_features, hyprparameter_ranges, input_shape
+    ))
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 toolbox.register("mate", tools.cxTwoPoint)
@@ -212,55 +284,64 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("evaluate", evaluate)
 
 # Run GA
-population = toolbox.population(n=64)  # population size
-N_GENS = 8                             # number of generations
+generations = ga_parameters["generation"]
+population_size = ga_parameters["population"]
 best_accuracies = []
 
-print("Starting Genetic Algorithm Optimization...\n")
+population = toolbox.population(n=population_size)
 
-for gen in range(N_GENS):
-    print(f"=== Generation {gen+1} ===")
+print("\n...Starting Genetic Algorithm Optimization...\n")
+
+for generation in range(1, generations + 1):
+    print(f"=== Generation {generation} ===")
 
     offspring = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.2)
-    offspring = list(map(repair, offspring))
+    for i, individual in enumerate(offspring):
+        offspring[i] = repair(individual, ranked_features, input_shape)
 
-    for ind in offspring:
-        ind.fitness.values = evaluate(ind, generation=gen+1)
+    for individuals in offspring:
+        individuals.fitness.values = evaluate(
+            individuals, input_shape, generation
+        )
 
     population = toolbox.select(offspring, k=len(population))
-    best_ind = tools.selBest(population, k=1)[0]
-    best_accuracies.append(best_ind.fitness.values[0])
+    best_individual = tools.selBest(population, k=1)[0]
+    best_accuracies.append(best_individual.fitness.values[0])
 
-    print("Best individual so far:", best_ind)
-    print("Best accuracy: {:.2f}%\n".format(best_ind.fitness.values[0] * 100))
+    print("Best individual so far:", best_individual)
+    print(f"Best accuracy: {best_individual.fitness.values[0] * 100:.2f}%")
 
 # Final model training
 print("Training model with best parameters...")
+best_individual = tools.selBest(population, k=1)[0]
+hypr_shape = input_shape + len(hyprparameter_ranges)
 
-best_params = tools.selBest(population, k=1)[0]
-feature_mask = best_params[:12]
-hyperparams = best_params[12:]
+feature_mask = best_individual[:input_shape]
+hyprparameters = best_individual[input_shape:hypr_shape]
+selected_indices = []
 
-selected_indices = [i for i, bit in enumerate(feature_mask) if bit == 1]
+for i, bit in enumerate(feature_mask):
+    if bit == 1:
+        selected_indices.append(i)
+
 X_train_selected = X_train[:, selected_indices]
 X_test_selected = X_test[:, selected_indices]
+selected_input_shape = len(selected_indices)
 
-model = create_ann_model(hyperparams, fit_model=False, input_shape=len(selected_indices))
-model_history = model.fit(X_train_selected, y_train, validation_split=0.30, epochs=145, batch_size=35,
-                          callbacks=[early_stopping, reduce_lr], verbose=0)
+model, model_history = create_ann_model(hyprparameters, selected_input_shape)
 
 model.save('models/ReLU_heart_model.keras')
 
 log_data = {
     'history': model_history.history,
     'selected_features': selected_indices,
-    'hyperparams': hyperparams
+    'hyprparameters': hyprparameters
 }
 joblib.dump(log_data, 'models/logs/ReLU_model_logs.pkl')
 
 # Final evaluation
-y_prob = model.predict(X_test_selected)
-y_pred = (y_prob > 0.5).astype(int)
-accuracy = accuracy_score(y_test, y_pred)
-print("Final Test Accuracy: {:.2f}%".format(accuracy * 100))
+y_probability = model.predict(X_test_selected)
+y_prediction = (y_probability > 0.5).astype(int)
+accuracy = accuracy_score(y_test, y_prediction)
 
+print(f"Final Test Accuracy: {accuracy * 100:.2f}%")
