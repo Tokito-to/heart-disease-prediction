@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeartGuard AI - Heart Disease Prediction</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <custom-navbar></custom-navbar>
+
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section id="hero" class="relative overflow-hidden text-white">
+            <div class="absolute inset-0 z-0" id="vanta-bg"></div>
+            <div class="relative z-10 max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6">Protect Your Heart with AI</h1>
+                    <p class="text-xl md:text-2xl max-w-3xl mx-auto mb-8">Our advanced ANN model helps predict heart disease risk factors with remarkable accuracy.</p>
+                    <a href="#predict" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 inline-block shadow-lg">Assess Your Risk Now</a>
+                </div>
+            </div>
+        </section>
+        <!-- How It Works Section -->
+        <section class="py-16 bg-gradient-to-r from-red-50 to-white">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">How HeartGuard AI Works</h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">Our advanced artificial intelligence evaluates multiple health parameters to provide accurate heart disease risk prediction.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+                            <i data-feather="cpu" class="w-8 h-8 text-red-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">AI-Powered Analysis</h3>
+                        <p class="text-gray-700 mb-4">Our neural network processes 13 key health indicators to detect patterns and risk factors.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i data-feather="check" class="mr-2 text-green-500 flex-shrink-0"></i>
+                                <span>Advanced machine learning algorithms</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i data-feather="check" class="mr-2 text-green-500 flex-shrink-0"></i>
+                                <span>86% prediction accuracy</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+                            <i data-feather="activity" class="w-8 h-8 text-red-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Comprehensive Parameters</h3>
+                        <p class="text-gray-700 mb-4">We evaluate traditional risk factors alongside clinical indicators.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i data-feather="check" class="mr-2 text-green-500 flex-shrink-0"></i>
+                                <span>Blood pressure & cholesterol</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i data-feather="check" class="mr-2 text-green-500 flex-shrink-0"></i>
+                                <span>ECG readings & chest pain patterns</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+                            <i data-feather="refresh-cw" class="w-8 h-8 text-red-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Continuous Learning</h3>
+                        <p class="text-gray-700 mb-4">Our model improves with new medical research and data.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i data-feather="check" class="mr-2 text-green-500 flex-shrink-0"></i>
+                                <span>Regular algorithm updates</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i data-feather="check" class="mr-2 text-green-500 flex-shrink-0"></i>
+                                <span>Evidence-based recommendations</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Heart Disease Facts Section -->
+        <section class="py-16 bg-gradient-to-r from-white to-red-50">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Key Heart Disease Facts</h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">Understanding heart disease is the first step toward prevention.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i data-feather="alert-octagon" class="w-6 h-6 text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Leading Cause of Death</h3>
+                        <p class="text-gray-700">Accounts for 1 in 4 deaths globally each year.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i data-feather="clock" class="w-6 h-6 text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Early Detection</h3>
+                        <p class="text-gray-700">80% of premature cases are preventable.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i data-feather="eye-off" class="w-6 h-6 text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Silent Symptoms</h3>
+                        <p class="text-gray-700">Many experience no warning signs before an attack.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i data-feather="trending-up" class="w-6 h-6 text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Rising Cases</h3>
+                        <p class="text-gray-700">Cases increasing by 15% annually worldwide.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+<!-- Assessment CTA Section -->
+        <section id="assess" class="py-16 bg-white">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to Assess Your Heart Health?</h2>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Our comprehensive assessment evaluates key risk factors using advanced AI technology.</p>
+                </div>
+<div class="bg-gray-50 rounded-xl shadow-lg p-8 text-center">
+                    <div class="max-w-2xl mx-auto">
+                        <div class="mb-6">
+                            <i data-feather="activity" class="w-12 h-12 mx-auto text-red-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">What You'll Get:</h3>
+                        <ul class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <li class="flex flex-col items-center">
+                                <i data-feather="bar-chart-2" class="w-8 h-8 text-red-600 mb-2"></i>
+                                <span class="text-gray-700">Personalized Risk Score</span>
+                            </li>
+                            <li class="flex flex-col items-center">
+                                <i data-feather="heart" class="w-8 h-8 text-red-600 mb-2"></i>
+                                <span class="text-gray-700">AI-Powered Analysis</span>
+                            </li>
+                            <li class="flex flex-col items-center">
+                                <i data-feather="clipboard" class="w-8 h-8 text-red-600 mb-2"></i>
+                                <span class="text-gray-700">Actionable Insights</span>
+                            </li>
+                        </ul>
+                        <a href="assessment.html" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 inline-block shadow-lg">Start Assessment</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section (Hidden on homepage) -->
+        <section id="results" class="py-16 bg-gray-50 hidden">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <div class="mb-6">
+                        <i data-feather="heart" class="w-16 h-16 mx-auto text-red-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Your Heart Health Assessment</h3>
+                    <div id="prediction-result" class="text-4xl font-bold mb-6 text-red-600">Loading...</div>
+                    <p id="result-description" class="text-lg text-gray-600 mb-6">Our AI model is analyzing your data to provide a personalized assessment.</p>
+                    <div class="bg-gray-100 p-4 rounded-lg text-left mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-2">Recommendations:</h4>
+                        <ul id="recommendations" class="list-disc pl-5 space-y-1">
+                            <!-- Recommendations will be inserted here by JavaScript -->
+                        </ul>
+                    </div>
+                    <button id="new-assessment" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-300">
+                        Start New Assessment
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Disclaimer Section -->
+        <section class="py-16 bg-gray-100">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Important Disclaimer</h2>
+                    <div class="prose text-gray-700">
+                        <p>This artificial intelligence tool is designed to provide risk assessment only and is not a substitute for professional medical advice, diagnosis, or treatment.</p>
+                        <ul class="mt-4 space-y-2">
+                            <li>Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.</li>
+                            <li>Never disregard professional medical advice or delay in seeking it because of something you have read or interpreted from this tool.</li>
+                            <li>The predictions provided by this model are based on statistical patterns and may not be accurate for all individuals.</li>
+                            <li>This tool does not claim to diagnose any medical condition and should be used for informational purposes only.</li>
+                        </ul>
+                        <p class="mt-4 font-medium">By using this tool, you acknowledge and accept these limitations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Creators Section -->
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900">Meet The Team</h2>
+                    <p class="text-lg text-gray-600 mt-2 max-w-2xl mx-auto">The passionate minds behind HeartGuard AI</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Creator 1 -->
+                    <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition duration-300">
+                        <div class="mx-auto mb-4 w-32 h-32 rounded-full bg-gray-300 overflow-hidden">
+                            <img src="http://static.photos/medical/320x240/1" alt="Creator 1" class="w-full h-full object-cover">
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Dr. Alex Chen</h3>
+                        <p class="text-red-600 font-medium mb-2">Cardiologist & AI Specialist</p>
+                        <p class="text-gray-600">With over 15 years in cardiology, Dr. Chen bridges the gap between medicine and technology.</p>
+                    </div>
+
+                    <!-- Creator 2 -->
+                    <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition duration-300">
+                        <div class="mx-auto mb-4 w-32 h-32 rounded-full bg-gray-300 overflow-hidden">
+                            <img src="http://static.photos/technology/320x240/2" alt="Creator 2" class="w-full h-full object-cover">
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Sarah Johnson</h3>
+                        <p class="text-red-600 font-medium mb-2">Data Scientist</p>
+                        <p class="text-gray-600">Specializing in neural networks, Sarah developed the predictive algorithms powering our model.</p>
+                    </div>
+
+                    <!-- Creator 3 -->
+                    <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition duration-300">
+                        <div class="mx-auto mb-4 w-32 h-32 rounded-full bg-gray-300 overflow-hidden">
+                            <img src="http://static.photos/science/320x240/3" alt="Creator 3" class="w-full h-full object-cover">
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Miguel Rodriguez</h3>
+                        <p class="text-red-600 font-medium mb-2">Health Informatics</p>
+                        <p class="text-gray-600">Miguel ensures our model integrates seamlessly with healthcare systems and standards.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Scripts -->
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script src="script.js"></script>
+    <script>
+        feather.replace();
+
+        // Initialize Vanta.js background
+        VANTA.WAVES({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x990000,
+            shininess: 35.00,
+            waveHeight: 15.00,
+            waveSpeed: 0.75,
+            zoom: 0.8
+        });
+    </script>
+<script src="https://huggingface.co/deepsite/deepsite-badge.js"></script>
+</body>
+</html>
+
