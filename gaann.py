@@ -1,37 +1,39 @@
 import csv
 import random
-import joblib
 
+import joblib
 import numpy as np
 import pandas as pd
-
-from imblearn.over_sampling import SMOTE
-from sklearn.model_selection import train_test_split
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
-
 import shap
+from imblearn.over_sampling import SMOTE
+from silence_tensorflow import silence_tensorflow
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import mutual_info_classif
-from sklearn.preprocessing import minmax_scale
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, minmax_scale
 
-from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
 
 import tensorflow as tf  # noqa: F401,E402
-
+from deap import algorithms, base, creator, tools  # noqa: E402
 from keras.backend import clear_session  # noqa: E402
-from keras.models import Sequential  # noqa: E402
-from keras.layers import ReLU, LeakyReLU, PReLU, ELU, Activation  # noqa: F401,E402,E501
-from keras.layers import Dense, InputLayer  # noqa: E402
-from keras.layers import Dropout, BatchNormalization  # noqa: E402
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau  # noqa: E402
+from keras.layers import (  # noqa: F401,E402,E501  # noqa: E402  # noqa: E402
+    ELU,
+    Activation,
+    BatchNormalization,
+    Dense,
+    Dropout,
+    InputLayer,
+    LeakyReLU,
+    PReLU,
+    ReLU,
+)
+from keras.metrics import AUC  # noqa: E402
+from keras.models import Sequential  # noqa: E402
 from keras.optimizers import Adam  # noqa: E402
 from keras.regularizers import l2  # noqa: E402
-from keras.metrics import AUC  # noqa: E402
-
-from deap import base, creator, tools, algorithms  # noqa: E402
 
 # Hyperparameter Ranges
 hyprparameter_ranges = {
@@ -41,17 +43,14 @@ hyprparameter_ranges = {
     "learning_rate": (0.0001, 0.01),
     "dropout_rate": (0.0, 0.4),
     "l2_regularization": (0.000001, 0.01),
-    "alpha": (0.01, 0.3)
+    "alpha": (0.01, 0.3),
 }
 
 # GA Parameters
-ga_parameters = {
-    "generation": 2,
-    "population": 5
-}
+ga_parameters = {"generation": 2, "population": 5}
 
 # Load dataset
-data = pd.read_csv('heart_dataset.csv')
+data = pd.read_csv("heart_dataset.csv")
 feature_names = data.columns[data.columns != "target"].tolist()
 input_shape = len(feature_names)
 
@@ -73,7 +72,7 @@ X_test = sc.transform(X_test)
 
 # Dump scaler # We need this to use pre-trained model
 # pre-trained model require same scaler as training scaler
-joblib.dump(sc, 'models/scaler.pkl')
+joblib.dump(sc, "models/scaler.pkl")
 
 # Compute feature importance (RF + MI + Shap)
 rf = RandomForestClassifier(random_state=42)
@@ -88,44 +87,37 @@ mi_importance = mutual_info_classif(X_train, y_train)
 shap_importance = np.abs(shap_values_class1).mean(axis=0)
 
 combined_score = (
-    minmax_scale(rf_importance) +
-    minmax_scale(mi_importance) +
-    minmax_scale(shap_importance)
+    minmax_scale(rf_importance)
+    + minmax_scale(mi_importance)
+    + minmax_scale(shap_importance)
 ) / 3
 ranked_features = np.argsort(combined_score)[::-1]
 
 # Logging
-log_file = 'models/logs/ReLU_model.csv'
-with open(log_file, mode='w', newline='') as f:
+log_file = "models/logs/ReLU_model.csv"
+with open(log_file, mode="w", newline="") as f:
     writer = csv.writer(f)
-    header = ['Generation', 'SelectedFeatures']
+    header = ["Generation", "SelectedFeatures"]
     for key in hyprparameter_ranges:
         header.append(key)
-    header.append('Accuracy')
+    header.append("Accuracy")
     writer.writerow(header)
 
 # Early stopping
 early_stopping = EarlyStopping(
-    start_from_epoch=25,
-    monitor='val_loss',
-    min_delta=0.001,
-    patience=5
+    start_from_epoch=25, monitor="val_loss", min_delta=0.001, patience=5
 )
 
 # Reduce Learning
-reduce_lr = ReduceLROnPlateau(
-    monitor='val_loss',
-    min_lr=0.0001,
-    factor=0.8,
-    patience=2
-)
+reduce_lr = ReduceLROnPlateau(monitor="val_loss", min_lr=0.0001, factor=0.8, patience=2)
+
 
 # ANN Model
 def create_ann_model(hyprparameters, input_shape):
     layer_keys = []
 
     for key in hyprparameter_ranges:
-        if key.startswith('l') and key[1:].isdigit():
+        if key.startswith("l") and key[1:].isdigit():
             layer_keys.append(key)
 
     hidden_layers = len(layer_keys)
@@ -144,20 +136,22 @@ def create_ann_model(hyprparameters, input_shape):
         model.add(BatchNormalization())
         model.add(Dropout(dr))
 
-    model.add(Dense(1, activation='sigmoid'))
+    model.add(Dense(1, activation="sigmoid"))
 
     model.compile(
         optimizer=Adam(learning_rate=lr),
-        loss='binary_crossentropy',
-        metrics=['accuracy', AUC(name='auc')]
+        loss="binary_crossentropy",
+        metrics=["accuracy", AUC(name="auc")],
     )
 
     model_history = model.fit(
-        X_train_selected, y_train,
+        X_train_selected,
+        y_train,
         validation_split=0.30,
-        epochs=145, batch_size=35,
+        epochs=145,
+        batch_size=35,
         callbacks=[early_stopping, reduce_lr],
-        verbose=0
+        verbose=0,
     )
 
     return model, model_history
@@ -165,11 +159,9 @@ def create_ann_model(hyprparameters, input_shape):
 
 # Hyprparameter Generator
 def random_hyprparameters(hyprparameter_ranges):
-
     hyprparameter = []
 
     for key, (low, high) in hyprparameter_ranges.items():
-
         if isinstance(low, int) and isinstance(high, int):
             random_value = random.randint(low, high)
         elif isinstance(low, float) and isinstance(high, float):
@@ -216,13 +208,13 @@ def evaluate(individual, input_shape, generation):
 
     model, _ = create_ann_model(hyprparameters, selected_input_shape)
     y_probability = model.predict(X_test_selected)
-    y_prediction = (y_probability > 0.5)
+    y_prediction = y_probability > 0.5
 
     accuracy = accuracy_score(y_test, y_prediction)
 
-    with open(log_file, mode='a', newline='') as f:
+    with open(log_file, mode="a", newline="") as f:
         writer = csv.writer(f)
-        log = [generation, ','.join(selected_features)]
+        log = [generation, ",".join(selected_features)]
         for parameter in hyprparameters:
             log.append(parameter)
         log.append(f"{accuracy * 100:.4f} %")
@@ -272,10 +264,11 @@ creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
 toolbox.register(
-    "individual", tools.initIterate, creator.Individual,
-    lambda: smart_individual(
-        ranked_features, hyprparameter_ranges, input_shape
-    ))
+    "individual",
+    tools.initIterate,
+    creator.Individual,
+    lambda: smart_individual(ranked_features, hyprparameter_ranges, input_shape),
+)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 toolbox.register("mate", tools.cxTwoPoint)
@@ -300,9 +293,7 @@ for generation in range(1, generations + 1):
         offspring[i] = repair(individual, ranked_features, input_shape)
 
     for individuals in offspring:
-        individuals.fitness.values = evaluate(
-            individuals, input_shape, generation
-        )
+        individuals.fitness.values = evaluate(individuals, input_shape, generation)
 
     population = toolbox.select(offspring, k=len(population))
     best_individual = tools.selBest(population, k=1)[0]
@@ -330,14 +321,14 @@ selected_input_shape = len(selected_indices)
 
 model, model_history = create_ann_model(hyprparameters, selected_input_shape)
 
-model.save('models/ReLU_heart_model.keras')
+model.save("models/ReLU_heart_model.keras")
 
 log_data = {
-    'history': model_history.history,
-    'selected_features': selected_indices,
-    'hyprparameters': hyprparameters
+    "history": model_history.history,
+    "selected_features": selected_indices,
+    "hyprparameters": hyprparameters,
 }
-joblib.dump(log_data, 'models/logs/ReLU_model_logs.pkl')
+joblib.dump(log_data, "models/logs/ReLU_model_logs.pkl")
 
 # Final evaluation
 y_probability = model.predict(X_test_selected)

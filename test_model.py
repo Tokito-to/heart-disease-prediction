@@ -1,35 +1,27 @@
-import joblib
 import argparse
 
+import joblib
 import numpy as np
 import pandas as pd
-
 from silence_tensorflow import silence_tensorflow
+
 silence_tensorflow()
 
 from keras.models import load_model  # noqa: E402
 
 parser = argparse.ArgumentParser(description="Pre-Trained Model Test")
 parser.add_argument(
-    '-m',
-    '--modelfile',
+    "-m",
+    "--modelfile",
     type=str,
     required=True,
-    help='Path to the trained modelfile (.keras)'
+    help="Path to the trained modelfile (.keras)",
 )
 parser.add_argument(
-    '-l',
-    '--logfile',
-    type=str,
-    required=True,
-    help='Path to modelfile logfile (.pkl)'
+    "-l", "--logfile", type=str, required=True, help="Path to modelfile logfile (.pkl)"
 )
 parser.add_argument(
-    '-s',
-    '--scaler',
-    type=str,
-    required=True,
-    help='Path to the scaler (.pkl)'
+    "-s", "--scaler", type=str, required=True, help="Path to the scaler (.pkl)"
 )
 args = parser.parse_args()
 
@@ -46,7 +38,7 @@ input_data_scaled = sc.transform(input_data)
 input_df = pd.DataFrame(input_data_scaled)
 
 # Select input data (GA-Feature Selection)
-selected_features = logfile['selected_features']
+selected_features = logfile["selected_features"]
 selected_feature_indices = list(selected_features)
 selected_input_data = input_df.iloc[:, selected_feature_indices]
 

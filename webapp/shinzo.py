@@ -1,12 +1,12 @@
 import joblib
 import numpy as np
 import pandas as pd
-
-from waitress import serve
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory
 
 # Silence TensorFlow warnings
 from silence_tensorflow import silence_tensorflow
+from waitress import serve
+
 silence_tensorflow()
 
 from keras.models import load_model  # noqa: E402
@@ -16,40 +16,35 @@ model = load_model("models/PReLU_heart_model.keras")
 logfile = joblib.load("models/logs/PReLU_model_logs.pkl")
 sc = joblib.load("models/scaler.pkl")
 
-app = Flask(
-    __name__,
-    template_folder='src',
-    static_folder='src',
-    static_url_path=''
-)
+app = Flask(__name__, template_folder="src", static_folder="src", static_url_path="")
 
 
-@app.route('/templates/<path:filename>')
+@app.route("/templates/<path:filename>")
 def custom_static(filename):
-    return send_from_directory('templates', filename)
+    return send_from_directory("templates", filename)
 
 
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template('index.html')
+    return render_template("index.html")
 
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
     data = request.json or request.form
     features = [
-        int(data['age']),
-        int(data['sex']),
-        int(data['cp']),
-        int(data['trestbps']),
-        int(data['chol']),
-        int(data['fbs']),
-        int(data['restecg']),
-        int(data['thalach']),
-        int(data['exang']),
-        float(data['oldpeak']),
-        int(data['slope']),
-        int(data['ca']),
+        int(data["age"]),
+        int(data["sex"]),
+        int(data["cp"]),
+        int(data["trestbps"]),
+        int(data["chol"]),
+        int(data["fbs"]),
+        int(data["restecg"]),
+        int(data["thalach"]),
+        int(data["exang"]),
+        float(data["oldpeak"]),
+        int(data["slope"]),
+        int(data["ca"]),
     ]
 
     try:
@@ -59,7 +54,7 @@ def predict():
         input_df = pd.DataFrame(input_data_scaled)
 
         # Select input data (GA-Feature Selection)
-        selected_features = logfile['selected_features']
+        selected_features = logfile["selected_features"]
         selected_feature_indices = list(selected_features)
         selected_input_data = input_df.iloc[:, selected_feature_indices]
 
@@ -72,10 +67,10 @@ def predict():
         elif prediction == 0:
             result = "Low Likelihood of Heart Disease."
 
-        return jsonify({'msg': result, 'prediction': int(prediction)})
+        return jsonify({"msg": result, "prediction": int(prediction)})
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 
 if __name__ == "__main__":
