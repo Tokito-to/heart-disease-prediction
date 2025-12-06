@@ -1,3 +1,5 @@
+import argparse
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -10,6 +12,9 @@ from waitress import serve
 silence_tensorflow()
 
 from keras.models import load_model  # noqa: E402
+
+parser = argparse.ArgumentParser(description="Pre-Trained Model WebApp Deploy")
+parser.add_argument("-d", "--debug", action="store_true", help="WebApp Debug Session")
 
 # Load the pre-trained model, logfile, and scaler
 model = load_model("models/PReLU_heart_model.keras")
@@ -74,4 +79,7 @@ def predict():
 
 
 if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=5000)
+    if parser.parse_args().debug:
+        app.run(host="0.0.0.0", port=5000, debug=True)
+    else:
+        serve(app, host="0.0.0.0", port=5000)
